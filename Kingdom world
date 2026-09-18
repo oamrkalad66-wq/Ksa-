@@ -71,7 +71,7 @@ workspace.DescendantAdded:Connect(optimizePrompt)
 ---------------------------------------------------------
 local Locations = {
     {name = "🛒 شراء ذكي 6k", type = "SmartBuy"},
-    {name = "🍗 2. مطعم البيك", cframe = CFrame.new(-945.361, 5.511, -297.429)},
+    {name = "🍗 2. مطعم البيك", cframe = CFrame.new(-949.7, 3.7, -292.2))},
     {name = "🪧 3. مقهى ساين", cframe = CFrame.new(-473.153, 5.553, -290.384)},
     {name = "☕ 4. هاف مليون", cframe = CFrame.new(-353.155, 5.158, -279.111)},
     {name = "🛒 5. بقالة الأولى", cframe = CFrame.new(506.612, 9.414, -311.789)},
