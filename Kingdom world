@@ -1,0 +1,173 @@
+-- VIP Teleport Hub + Instant Manual Interaction + Noclip (Void)
+-- Designed for Omar
+
+local Players = game:GetService("Players")
+local TeleportService = game:GetService("TeleportService")
+local HttpService = game:GetService("HttpService")
+local RunService = game:GetService("RunService")
+local player = Players.LocalPlayer
+
+-- 1. جعل الأخذ يدوي وفوري فوراً بمجرد الضغط (بدون انتظار أو تعليق)
+local function setInstantInteraction(obj)
+    if obj:IsA("ProximityPrompt") then
+        obj.HoldDuration = 0 -- صفر ثواني تعليق
+        obj.RequiresLineOfSight = false
+    end
+end
+
+for _, obj in pairs(workspace:GetDescendants()) do
+    setInstantInteraction(obj)
+end
+workspace.DescendantAdded:Connect(setInstantInteraction)
+
+-- 2. تفعيل الفويد / النوكليب (Noclip) باستمرار
+RunService.Stepped:Connect(function()
+    local char = player.Character
+    if char then
+        for _, part in pairs(char:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = false
+            end
+        end
+    end
+end)
+
+-- مواقع الانتقال
+local locations = {
+    {name = "📍 1. الادوات", cframe = CFrame.new(-728.545288, 37.345871, -9741.573242)},
+    {name = "📍 2. البيك", cframe = CFrame.new(-945.361084, 5.511894, -297.429718)},
+    {name = "📍 3. ساين", cframe = CFrame.new(-473.153381, 5.553691, -290.384857)},
+    {name = "📍 4. هاف مليون", cframe = CFrame.new(-353.155487, 5.158958, -279.111053)},
+    {name = "📍 5. بقاله", cframe = CFrame.new(506.612213, 9.414768, -311.789612)},
+    {name = "📍 6. بقاله اثنين", cframe = CFrame.new(596.610168, 6.023918, -341.897827)},
+    {name = "📍 7. بقاله ٣", cframe = CFrame.new(1296.671753, 5.560692, -220.331253)},
+    {name = "📍 8. كودو", cframe = CFrame.new(-95.566582, 6.149921, 547.661804)}
+}
+
+-- 3. تصميم واجهة احترافية متطورة
+local playerGui = player:WaitForChild("PlayerGui")
+if playerGui:FindFirstChild("OmarUltraGui") then
+    playerGui.OmarUltraGui:Destroy()
+end
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "OmarUltraGui"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = playerGui
+
+-- النافذة الرئيسية
+local mainFrame = Instance.new("Frame")
+mainFrame.Name = "MainFrame"
+mainFrame.Size = UDim2.new(0, 210, 0, 360)
+mainFrame.Position = UDim2.new(0.08, 0, 0.25, 0)
+mainFrame.BackgroundColor3 = Color3.fromRGB(15, 16, 22)
+mainFrame.BorderSizePixel = 0
+mainFrame.Active = true
+mainFrame.Draggable = true
+mainFrame.Parent = screenGui
+
+local corner = Instance.new("UICorner", mainFrame)
+corner.CornerRadius = UDim.new(0, 12)
+
+local stroke = Instance.new("UIStroke", mainFrame)
+stroke.Color = Color3.fromRGB(0, 170, 255)
+stroke.Thickness = 1.5
+stroke.Transparency = 0.2
+
+-- الهيدر / العنوان
+local titleBar = Instance.new("Frame")
+titleBar.Size = UDim2.new(1, 0, 0, 38)
+titleBar.BackgroundColor3 = Color3.fromRGB(24, 26, 36)
+titleBar.BorderSizePixel = 0
+titleBar.Parent = mainFrame
+
+local titleCorner = Instance.new("UICorner", titleBar)
+titleCorner.CornerRadius = UDim.new(0, 12)
+
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size = UDim2.new(1, 0, 1, 0)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Text = "⚡ OMAR VIP HUB ⚡"
+titleLabel.TextColor3 = Color3.fromRGB(0, 210, 255)
+titleLabel.TextSize = 14
+titleLabel.Font = Enum.Font.GothamBold
+titleLabel.Parent = titleBar
+
+-- قائمة الأزرار المتحركة (Scroll)
+local scrollFrame = Instance.new("ScrollingFrame")
+scrollFrame.Size = UDim2.new(1, -16, 1, -90)
+scrollFrame.Position = UDim2.new(0, 8, 0, 44)
+scrollFrame.BackgroundTransparency = 1
+scrollFrame.BorderSizePixel = 0
+scrollFrame.ScrollBarThickness = 3
+scrollFrame.ScrollBarImageColor3 = Color3.fromRGB(0, 170, 255)
+scrollFrame.Parent = mainFrame
+
+local listLayout = Instance.new("UIListLayout")
+listLayout.Parent = scrollFrame
+listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+listLayout.Padding = UDim.new(0, 6)
+
+scrollFrame.CanvasSize = UDim2.new(0, 0, 0, (#locations * 36))
+
+-- إضافة أزرار المناطق
+for _, loc in ipairs(locations) do
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, -6, 0, 30)
+    btn.BackgroundColor3 = Color3.fromRGB(26, 30, 44)
+    btn.Text = loc.name
+    btn.TextColor3 = Color3.fromRGB(240, 240, 250)
+    btn.TextSize = 12
+    btn.Font = Enum.Font.GothamMedium
+    btn.Parent = scrollFrame
+
+    local btnCorner = Instance.new("UICorner", btn)
+    btnCorner.CornerRadius = UDim.new(0, 6)
+
+    local btnStroke = Instance.new("UIStroke", btn)
+    btnStroke.Color = Color3.fromRGB(40, 50, 75)
+    btnStroke.Thickness = 1
+
+    btn.MouseButton1Click:Connect(function()
+        local char = player.Character
+        if char and char:FindFirstChild("HumanoidRootPart") then
+            char.HumanoidRootPart.CFrame = loc.cframe
+        end
+    end)
+end
+
+-- زر تغيير السيرفر احترافي
+local hopBtn = Instance.new("TextButton")
+hopBtn.Size = UDim2.new(1, -16, 0, 32)
+hopBtn.Position = UDim2.new(0, 8, 1, -38)
+hopBtn.BackgroundColor3 = Color3.fromRGB(210, 45, 65)
+hopBtn.Text = "🌐 تغيير السيرفر (Server Hop)"
+hopBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+hopBtn.TextSize = 11
+hopBtn.Font = Enum.Font.GothamBold
+hopBtn.Parent = mainFrame
+
+local hopCorner = Instance.new("UICorner", hopBtn)
+hopCorner.CornerRadius = UDim.new(0, 8)
+
+hopBtn.MouseButton1Click:Connect(function()
+    hopBtn.Text = "⏳ جاري البحث..."
+    local servers = {}
+    local success, err = pcall(function()
+        local url = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"
+        servers = HttpService:JSONDecode(game:HttpGet(url)).data
+    end)
+    
+    if success and servers then
+        for _, server in ipairs(servers) do
+            if server.playing < server.maxPlayers and server.id ~= game.JobId then
+                TeleportService:TeleportToPlaceInstance(game.PlaceId, server.id, player)
+                break
+            end
+        end
+    else
+        hopBtn.Text = "❌ خطأ، حاول مجدداً"
+        task.wait(2)
+        hopBtn.Text = "🌐 تغيير السيرفر (Server Hop)"
+    end
+end)
