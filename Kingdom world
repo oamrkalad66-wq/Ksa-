@@ -1,5 +1,5 @@
 -- =======================================================
--- ⚡ VOID VIP - VIOLET & DARK CYAN (FULL AUTO SERVER HOP) ⚡
+-- ⚡ VOID VIP - VIOLET & DARK CYAN (AUTO RE-EXECUTE HOP) ⚡
 -- Engineered for Omar | Mobile Direct Execution
 -- =======================================================
 
@@ -11,6 +11,16 @@ local SoundService = game:GetService("SoundService")
 local LocalPlayer = Players.LocalPlayer
 
 local queueOnTeleport = queue_on_teleport or (syn and syn.queue_on_teleport) or (fluxus and fluxus.queue_on_teleport) or queueonteleport
+
+-- كود السكربت كاملاً ليعمل تلقائياً عند الانتقال لأي سيرفر جديد
+if queueOnTeleport then
+    pcall(function()
+        queueOnTeleport([[
+            task.wait(1.5)
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/mdltt/VoidVIP/main/main.lua"))() -- (ملاحظة: إذا نسخته من هنا، انسخ السكربت بالكامل وضعه هنا ليشتغل معك بكل سيرفر)
+        ]])
+    end)
+end
 
 -- تنظيف الواجهات القديمة
 local CoreGui = game:GetService("CoreGui")
@@ -261,109 +271,7 @@ for _, loc in ipairs(Locations) do
     end)
 end
 
----------------------------------------------------------
--- 6. دالة إعادة التشغيل للسكربت بأكمله عند الانتقال
----------------------------------------------------------
-local scriptSource = [[
-task.wait(2)
-local Players = game:GetService("Players")
-local TeleportService = game:GetService("TeleportService")
-local HttpService = game:GetService("HttpService")
-local TweenService = game:GetService("TweenService")
-local SoundService = game:GetService("SoundService")
-local LocalPlayer = Players.LocalPlayer
-local queueOnTeleport = queue_on_teleport or (syn and syn.queue_on_teleport) or (fluxus and fluxus.queue_on_teleport) or queueonteleport
-
-local ParentGui = (gethui and gethui()) or game:GetService("CoreGui"):FindFirstChild("RobloxGui") or LocalPlayer:WaitForChild("PlayerGui")
-if ParentGui:FindFirstChild("VoidVIP_VioletCyan") then ParentGui.VoidVIP_VioletCyan:Destroy() end
-
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "VoidVIP_VioletCyan"
-ScreenGui.ResetOnSpawn = false
-ScreenGui.Parent = ParentGui
-
-local Main = Instance.new("Frame", ScreenGui)
-Main.Size = UDim2.new(0, 240, 0, 360)
-Main.Position = UDim2.new(0.08, 0, 0.2, 0)
-Main.BackgroundColor3 = Color3.fromRGB(10, 8, 18)
-Main.Active = true
-Main.Draggable = true
-
-local MainCorner = Instance.new("UICorner", Main) MainCorner.CornerRadius = UDim.new(0, 16)
-local MainStroke = Instance.new("UIStroke", Main) MainStroke.Color = Color3.fromRGB(140, 60, 230) MainStroke.Thickness = 1.8
-
-local Header = Instance.new("Frame", Main)
-Header.Size = UDim2.new(1, 0, 0, 44)
-Header.BackgroundColor3 = Color3.fromRGB(18, 12, 32)
-
-local TitleText = Instance.new("TextLabel", Header)
-TitleText.Size = UDim2.new(1, 0, 1, 0)
-TitleText.BackgroundTransparency = 1
-TitleText.Text = "⚡ VOID VIP ⚡"
-TitleText.TextColor3 = Color3.fromRGB(0, 190, 230)
-TitleText.Font = Enum.Font.GothamBold
-TitleText.TextSize = 14
-
-local Scroll = Instance.new("ScrollingFrame", Main)
-Scroll.Size = UDim2.new(1, -14, 1, -98)
-Scroll.Position = UDim2.new(0, 7, 0, 50)
-Scroll.BackgroundTransparency = 1
-
-local ListLayout = Instance.new("UIListLayout", Scroll)
-ListLayout.Padding = UDim.new(0, 6)
-
-local Locations = {
-    {name = "🛒 شراء ذكي 6k", type = "SmartBuy"},
-    {name = "🍗 2. مطعم البيك", cframe = CFrame.new(-945.361, 5.511, -297.429)},
-    {name = "🪧 3. مقهى ساين", cframe = CFrame.new(-473.153, 5.553, -290.384)},
-    {name = "☕ 4. هاف مليون", cframe = CFrame.new(-353.155, 5.158, -279.111)},
-    {name = "🛒 5. بقالة الأولى", cframe = CFrame.new(506.612, 9.414, -311.789)},
-    {name = "🏪 6. بقالة الثانية", cframe = CFrame.new(596.610, 6.023, -341.897)},
-    {name = "🛍️ 7. بقالة الثالثة", cframe = CFrame.new(1296.671, 5.560, -220.331)},
-    {name = "🍔 8. مطعم كودو", cframe = CFrame.new(-95.566, 6.149, 547.661)}
-}
-
-for _, loc in ipairs(Locations) do
-    local Btn = Instance.new("TextButton", Scroll)
-    Btn.Size = UDim2.new(1, -6, 0, 32)
-    Btn.BackgroundColor3 = Color3.fromRGB(18, 14, 30)
-    Btn.Text = loc.name
-    Btn.TextColor3 = Color3.fromRGB(220, 230, 245)
-    Btn.Font = Enum.Font.GothamMedium
-    Btn.TextSize = 11.5
-    local BtnCorner = Instance.new("UICorner", Btn) BtnCorner.CornerRadius = UDim.new(0, 8)
-    
-    Btn.MouseButton1Click:Connect(function()
-        if loc.type == "SmartBuy" then
-            local args = {[1] = "Buy", [2] = {["\217\129\216\167\216\173 \216\167\217\130\217\129\216\167\217\132 \217\133\216\170\217\130\216\175\217\133"] = 3}, [3] = 6000}
-            pcall(function() game:GetService("ReplicatedStorage").Replicated.Events.MarketEvent.Event:InvokeServer(unpack(args)) end)
-        else
-            local char = LocalPlayer.Character
-            if char and char:FindFirstChild("HumanoidRootPart") then char.HumanoidRootPart.CFrame = loc.cframe end
-        end
-    end)
-end
-
-local ToggleBtn = Instance.new("TextButton", ScreenGui)
-ToggleBtn.Size = UDim2.new(0, 52, 0, 52)
-ToggleBtn.Position = UDim2.new(0.02, 0, 0.4, 0)
-ToggleBtn.BackgroundColor3 = Color3.fromRGB(12, 10, 22)
-ToggleBtn.Text = "V"
-ToggleBtn.TextColor3 = Color3.fromRGB(0, 190, 230)
-ToggleBtn.Font = Enum.Font.GothamBold
-ToggleBtn.TextSize = 25
-ToggleBtn.Active = true
-ToggleBtn.Draggable = true
-local ToggleCorner = Instance.new("UICorner", ToggleBtn) ToggleCorner.CornerRadius = UDim.new(1, 0)
-
-ToggleBtn.MouseButton1Click:Connect(function()
-    Main.Visible = not Main.Visible
-end)
-]]
-
----------------------------------------------------------
--- 7. زر تغيير السيرفر (Server Hop)
----------------------------------------------------------
+-- زر تغيير السيرفر
 local HopBtn = Instance.new("TextButton", Main)
 HopBtn.Size = UDim2.new(1, -14, 0, 36)
 HopBtn.Position = UDim2.new(0, 7, 1, -42)
@@ -390,9 +298,13 @@ HopBtn.MouseButton1Click:Connect(function()
         if success and result then
             for _, server in ipairs(result) do
                 if server.playing < server.maxPlayers and server.id ~= game.JobId then
+                    -- حفظ السكربت وإعادة تشغيله تلقائياً قبل الانتقال
                     if queueOnTeleport then
                         pcall(function()
-                            queueOnTeleport(scriptSource)
+                            queueOnTeleport([[
+                                task.wait(1.5)
+                                loadstring(game:HttpGet("https://raw.githubusercontent.com/mdltt/VoidVIP/main/main.lua"))()
+                            ]])
                         end)
                     end
                     TeleportService:TeleportToPlaceInstance(game.PlaceId, server.id, LocalPlayer)
@@ -409,7 +321,7 @@ HopBtn.MouseButton1Click:Connect(function()
 end)
 
 ---------------------------------------------------------
--- 8. زر V المائي
+-- 6. زر V المائي
 ---------------------------------------------------------
 local ToggleBtn = Instance.new("TextButton", ScreenGui)
 ToggleBtn.Name = "VoidToggleBtn"
