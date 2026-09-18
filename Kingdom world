@@ -1,6 +1,5 @@
 -- =======================================================
--- ⚡ VOID VIP - UNLIMITED MASS SERVER HOP (FIXED) ⚡
--- Engineered for Omar | Multi-Page Deep Fetching
+-- ⚡ VOID VIP - MASS SERVER HOP (ORIGINAL UI + BAKERY COORDS) ⚡
 -- =======================================================
 
 local Players = game:GetService("Players")
@@ -12,7 +11,6 @@ local LocalPlayer = Players.LocalPlayer
 
 local queueOnTeleport = queue_on_teleport or (syn and syn.queue_on_teleport) or (fluxus and fluxus.queue_on_teleport) or queueonteleport
 
--- إعادة التشغيل التلقائي عند الانتقال
 if queueOnTeleport then
     pcall(function()
         queueOnTeleport([[
@@ -22,7 +20,6 @@ if queueOnTeleport then
     end)
 end
 
--- تنظيف الواجهات القديمة
 local CoreGui = game:GetService("CoreGui")
 local ParentGui = (gethui and gethui()) or CoreGui:FindFirstChild("RobloxGui") or LocalPlayer:WaitForChild("PlayerGui")
 if ParentGui:FindFirstChild("VoidVIP_VioletCyan") then
@@ -67,11 +64,11 @@ for _, obj in ipairs(workspace:GetDescendants()) do optimizePrompt(obj) end
 workspace.DescendantAdded:Connect(optimizePrompt)
 
 ---------------------------------------------------------
--- 3. قائمة المواقع والأزرار
+-- 3. قائمة المواقع والأزرار (موقع البيك الجديد فقط)
 ---------------------------------------------------------
 local Locations = {
     {name = "🛒 شراء ذكي 6k", type = "SmartBuy"},
-    {name = "🍗 2. مطعم البيك", cframe = CFrame.new(-949.7, 3.7, -292.2))},
+    {name = "🍗 2. مطعم البيك", cframe = CFrame.new(-949.7, 3.7, -292.2)},
     {name = "🪧 3. مقهى ساين", cframe = CFrame.new(-473.153, 5.553, -290.384)},
     {name = "☕ 4. هاف مليون", cframe = CFrame.new(-353.155, 5.158, -279.111)},
     {name = "🛒 5. بقالة الأولى", cframe = CFrame.new(506.612, 9.414, -311.789)},
@@ -273,13 +270,13 @@ for _, loc in ipairs(Locations) do
 end
 
 ---------------------------------------------------------
--- نظام Server Hop الشامل (جلب كل الصفحات + منع التكرار)
+-- زر تغيير السيرفر (بحث شامل في آلاف السيرفرات وإظهار العدد)
 ---------------------------------------------------------
 local HopBtn = Instance.new("TextButton", Main)
 HopBtn.Size = UDim2.new(1, -14, 0, 36)
 HopBtn.Position = UDim2.new(0, 7, 1, -42)
 HopBtn.BackgroundColor3 = Color3.fromRGB(150, 25, 80)
-HopBtn.Text = "🌐 تغيير السيرفر (All Servers)"
+HopBtn.Text = "🌐 تغيير السيرفر (Server Hop)"
 HopBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 HopBtn.Font = Enum.Font.GothamBold
 HopBtn.TextSize = 11.5
@@ -287,15 +284,14 @@ HopBtn.TextSize = 11.5
 local HopCorner = Instance.new("UICorner", HopBtn)
 HopCorner.CornerRadius = UDim.new(0, 9)
 
--- جدول لتخزين السيرفرات التي تم زيارتها لعدم تكرارها
 if not getgenv().VisitedServers then
     getgenv().VisitedServers = {}
 end
 
 HopBtn.MouseButton1Click:Connect(function()
     PlaySFX(SFX.Click, 1, 0.9)
-    HopBtn.Text = "⏳ جاري فحص آلاف السيرفرات..."
-    Notify("البحث الشامل", "جاري جلب كل السيرفرات المتاحة...")
+    HopBtn.Text = "⏳ جاري البحث في آلاف السيرفرات..."
+    Notify("البحث الشامل", "جاري فحص السيرفرات المتاحة...")
     
     task.spawn(function()
         local currentJobId = game.JobId
@@ -303,7 +299,7 @@ HopBtn.MouseButton1Click:Connect(function()
         
         local allServers = {}
         local cursor = ""
-        local maxPages = 15 -- فحص حتى 15 صفحة (تقريباً 1500 سيرفر)
+        local maxPages = 15
         local pagesFetched = 0
         
         repeat
@@ -318,7 +314,6 @@ HopBtn.MouseButton1Click:Connect(function()
                 local data = HttpService:JSONDecode(response)
                 if data and data.data then
                     for _, server in ipairs(data.data) do
-                        -- التأكد من أن السيرفر ليس الحالي، ليس ممتلئاً، ولم يتم زيارته مسبقاً
                         local isVisited = false
                         for _, vId in ipairs(getgenv().VisitedServers) do
                             if vId == server.id then
@@ -342,8 +337,7 @@ HopBtn.MouseButton1Click:Connect(function()
         until not cursor or pagesFetched >= maxPages
         
         if #allServers > 0 then
-            HopBtn.Text = "⚡ تم العثور على " .. #allServers .. " سيرفر!"
-            -- اختيار سيرفر عشوائي تماماً من القائمة الضخمة
+            HopBtn.Text = "⚡ لقى " .. #allServers .. " سيرفر!"
             local randomServer = allServers[math.random(1, #allServers)]
             table.insert(getgenv().VisitedServers, randomServer)
             
@@ -359,10 +353,10 @@ HopBtn.MouseButton1Click:Connect(function()
             TeleportService:TeleportToPlaceInstance(game.PlaceId, randomServer, LocalPlayer)
         else
             HopBtn.Text = "🔄 إعادة تعيين القائمة..."
-            getgenv().VisitedServers = {currentJobId} -- إعادة تعيين الذاكرة المؤقتة لو خلصت السيرفرات
+            getgenv().VisitedServers = {currentJobId}
             task.wait(1)
-            HopBtn.Text = "🌐 تغيير السيرفر (All Servers)"
-            Notify("تنبيه", "تمت زيارة جميع السيرفرات المتاحة، جرب مرة أخرى الآن!")
+            HopBtn.Text = "🌐 تغيير السيرفر (Server Hop)"
+            Notify("تنبيه", "تمت زيارة السيرفرات، جرب مرة أخرى الآن!")
         end
     end)
 end)
@@ -431,4 +425,4 @@ ToggleBtn.MouseButton1Click:Connect(function()
     end
 end)
 
-Notify("⚡ VOID VIP ⚡", "تم تفعيل نظام كل السيرفرات بنجاح!")
+Notify("⚡ VOID VIP ⚡", "تم تحديث موقع البيك بنجاح وجاهز!")
