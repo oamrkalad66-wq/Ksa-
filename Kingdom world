@@ -1,5 +1,5 @@
 -- =======================================================
--- ⚡ VOID VIP - VIOLET & DARK CYAN (AUTO RE-EXECUTE HOP) ⚡
+-- ⚡ VOID VIP - VIOLET & DARK CYAN (FIXED SERVER HOP) ⚡
 -- Engineered for Omar | Mobile Direct Execution
 -- =======================================================
 
@@ -12,7 +12,7 @@ local LocalPlayer = Players.LocalPlayer
 
 local queueOnTeleport = queue_on_teleport or (syn and syn.queue_on_teleport) or (fluxus and fluxus.queue_on_teleport) or queueonteleport
 
--- كود السكربت كاملاً ليعمل تلقائياً عند الانتقال لأي سيرفر جديد
+-- إعادة التشغيل التلقائي عند التجميع والتنقل
 if queueOnTeleport then
     pcall(function()
         queueOnTeleport([[
@@ -272,7 +272,7 @@ for _, loc in ipairs(Locations) do
     end)
 end
 
--- زر تغيير السيرفر
+-- زر تغيير السيرفر المطور (Real Server Hop)
 local HopBtn = Instance.new("TextButton", Main)
 HopBtn.Size = UDim2.new(1, -14, 0, 36)
 HopBtn.Position = UDim2.new(0, 7, 1, -42)
@@ -291,33 +291,53 @@ HopBtn.MouseButton1Click:Connect(function()
     Notify("السيرفرات", "جاري البحث عن سيرفر جديد...")
     
     task.spawn(function()
-        local success, result = pcall(function()
-            local url = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"
-            return HttpService:JSONDecode(game:HttpGet(url)).data
-        end)
+        local currentJobId = game.JobId
+        local validServers = {}
+        local cursor = ""
         
-        if success and result then
-            for _, server in ipairs(result) do
-                if server.playing < server.maxPlayers and server.id ~= game.JobId then
-                    -- حفظ السكربت وإعادة تشغيله تلقائياً قبل الانتقال
-                    if queueOnTeleport then
-                        pcall(function()
-                            queueOnTeleport([[
-                                task.wait(1.5)
-                                loadstring(game:HttpGet("https://raw.githubusercontent.com/mdltt/VoidVIP/main/main.lua"))()
-                            ]])
-                        end)
+        -- الفحص عبر صفحات سيرفرات روبلوكس
+        for page = 1, 4 do
+            local url = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100" .. (cursor ~= "" and "&cursor=" .. cursor or "")
+            local success, response = pcall(function() 
+                return game:HttpGet(url) 
+            end)
+            
+            if success and response then
+                local data = HttpService:JSONDecode(response)
+                if data and data.data then
+                    for _, server in ipairs(data.data) do
+                        -- استبعاد السيرفر الحالي والتأكد من وجود مكان للعب
+                        if server.id ~= currentJobId and server.playing < server.maxPlayers then
+                            table.insert(validServers, server.id)
+                        end
                     end
-                    TeleportService:TeleportToPlaceInstance(game.PlaceId, server.id, LocalPlayer)
-                    return
+                    
+                    if #validServers >= 8 or not data.nextPageCursor then
+                        break
+                    end
+                    cursor = data.nextPageCursor
                 end
             end
-            HopBtn.Text = "❌ لم يتم العثور"
-        else
-            HopBtn.Text = "❌ خطأ بالاتصال"
         end
-        task.wait(2)
-        HopBtn.Text = "🌐 تغيير السيرفر (Server Hop)"
+        
+        -- الانتقال لسيرفر عشوائي جديد
+        if #validServers > 0 then
+            local selectedServer = validServers[math.random(1, #validServers)]
+            if queueOnTeleport then
+                pcall(function()
+                    queueOnTeleport([[
+                        task.wait(1.5)
+                        loadstring(game:HttpGet("https://raw.githubusercontent.com/mdltt/VoidVIP/main/main.lua"))()
+                    ]])
+                end)
+            end
+            TeleportService:TeleportToPlaceInstance(game.PlaceId, selectedServer, LocalPlayer)
+        else
+            HopBtn.Text = "❌ لم يتم العثور"
+            Notify("تنبيه", "لم نجد سيرفرات أخرى مناسبة حالياً")
+            task.wait(2)
+            HopBtn.Text = "🌐 تغيير السيرفر (Server Hop)"
+        end
     end)
 end)
 
