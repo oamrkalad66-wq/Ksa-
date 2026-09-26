@@ -1,5 +1,5 @@
 -- =======================================================
--- ⚡ VOID VIP - MASS SERVER HOP (ORIGINAL UI + BAKERY COORDS) ⚡
+-- ⚡ VOID VIP - MASS SERVER HOP (FULL ANTI-KICK & SECURITY) ⚡
 -- =======================================================
 
 local Players = game:GetService("Players")
@@ -7,8 +7,54 @@ local TeleportService = game:GetService("TeleportService")
 local HttpService = game:GetService("HttpService")
 local TweenService = game:GetService("TweenService")
 local SoundService = game:GetService("SoundService")
+local ScriptContext = game:GetService("ScriptContext")
 local LocalPlayer = Players.LocalPlayer
 
+---------------------------------------------------------
+-- 🛡️ 0. محرك الحماية الشاملة ومكافحة الطرد (Anti-Kick Engine)
+---------------------------------------------------------
+local function ApplyAntiKickShield()
+    -- 1. تعطيل طرد السيرفر عبر __namecall
+    local rawMetatable = (getrawmetatable and getrawmetatable(game)) or nil
+    if rawMetatable and setreadonly then
+        local oldNamecall = rawMetatable.__namecall
+        setreadonly(rawMetatable, false)
+        
+        rawMetatable.__namecall = newcclosure(function(self, ...)
+            local method = getnamecallmethod()
+            if (method == "Kick" or method == "kick") and (self == LocalPlayer or self == game) then
+                return nil
+            end
+            return oldNamecall(self, ...)
+        end)
+        
+        setreadonly(rawMetatable, true)
+    end
+
+    -- 2. تعطيل دالة Kick المباشرة
+    if hookfunction and LocalPlayer.Kick then
+        local oldKick
+        oldKick = hookfunction(LocalPlayer.Kick, newcclosure(function(self, ...)
+            if self == LocalPlayer then
+                return nil
+            end
+            return oldKick(self, ...)
+        end))
+    end
+
+    -- 3. إخفاء التقرير عن الأخطاء للحماية من كشف المودات
+    pcall(function()
+        ScriptContext.Error:Connect(function()
+            return true
+        end)
+    end)
+end
+
+pcall(ApplyAntiKickShield)
+
+---------------------------------------------------------
+-- إعادة التشغيل الآمنة بعد الانتقال
+---------------------------------------------------------
 local queueOnTeleport = queue_on_teleport or (syn and syn.queue_on_teleport) or (fluxus and fluxus.queue_on_teleport) or queueonteleport
 
 if queueOnTeleport then
@@ -64,7 +110,7 @@ for _, obj in ipairs(workspace:GetDescendants()) do optimizePrompt(obj) end
 workspace.DescendantAdded:Connect(optimizePrompt)
 
 ---------------------------------------------------------
--- 3. قائمة المواقع والأزرار (موقع البيك الجديد فقط)
+-- 3. قائمة المواقع والأزرار
 ---------------------------------------------------------
 local Locations = {
     {name = "🛒 شراء ذكي 6k", type = "SmartBuy"},
@@ -262,6 +308,8 @@ for _, loc in ipairs(Locations) do
         else
             local char = LocalPlayer.Character
             if char and char:FindFirstChild("HumanoidRootPart") then
+                -- تصفير السرعة لمنع كشف الانقال السريع
+                char.HumanoidRootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
                 char.HumanoidRootPart.CFrame = loc.cframe
                 Notify("تم الانتقال بنجاح ⚡", loc.name)
             end
@@ -270,7 +318,7 @@ for _, loc in ipairs(Locations) do
 end
 
 ---------------------------------------------------------
--- زر تغيير السيرفر (بحث شامل في آلاف السيرفرات وإظهار العدد)
+-- زر تغيير السيرفر (Server Hop)
 ---------------------------------------------------------
 local HopBtn = Instance.new("TextButton", Main)
 HopBtn.Size = UDim2.new(1, -14, 0, 36)
@@ -425,4 +473,4 @@ ToggleBtn.MouseButton1Click:Connect(function()
     end
 end)
 
-Notify("⚡ VOID VIP ⚡", "تم تحديث موقع البيك بنجاح وجاهز!")
+Notify("⚡ VOID VIP ⚡", "تم تفعيل حماية Anti-Kick ومكافحة الكشف بنجاح!")
